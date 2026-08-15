@@ -1,13 +1,14 @@
 # raz-language/.github
 
-Shared GitHub organization configuration for the Raz programming language.
+Organization profile repository for the Raz programming language.
 
-This repository contains:
+GitHub renders `profile/README.md` on the public `raz-language` organization page.
 
-- the public organization profile;
-- contribution and security guidance;
-- default issue templates;
-- the default pull request template;
-- shared branding assets.
+## Structure
 
-The public organization profile is defined in `profile/README.md`.
+```text
+profile/
+├── README.md
+└── assets/
+    └── raz-logo.png
+```
