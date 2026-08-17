@@ -4,11 +4,17 @@
 
 # Raz
 
-**A modern systems programming language for fast, reliable native software.**
+**A statically typed systems programming language for fast, safe, predictable native software.**
 
 [![Compiler](https://img.shields.io/badge/compiler-raz-111827?style=flat-square)](https://github.com/raz-language/raz)
 [![Packages](https://img.shields.io/badge/packages-registry-111827?style=flat-square)](https://github.com/raz-language/packages)
-[![License](https://img.shields.io/badge/license-see%20repository-111827?style=flat-square)](https://github.com/raz-language/raz)
+[![Version](https://img.shields.io/badge/language-1.0-111827?style=flat-square)](https://github.com/raz-language/raz/blob/main/docs/LANGUAGE-STABILITY.md)
+[![License](https://img.shields.io/badge/license-Apache--2.0-111827?style=flat-square)](https://github.com/raz-language/raz/blob/main/LICENSE)
+
+[Compiler](https://github.com/raz-language/raz) ·
+[Documentation](https://github.com/raz-language/raz/blob/main/docs/README.md) ·
+[Getting started](https://github.com/raz-language/raz/blob/main/docs/GETTING-STARTED.md) ·
+[Packages](https://github.com/raz-language/packages)
 
 </div>
 
@@ -16,50 +22,62 @@
 
 ## The Raz language
 
-Raz is a general-purpose systems programming language designed around three priorities:
+Raz is a general-purpose systems programming language built around three priorities: **performance, safety, and control.**
 
-**performance, safety, and control.**
+It targets software where runtime cost, memory behavior, concurrency, and machine-level access matter — compilers, runtimes, databases, network services, command-line tools, and infrastructure — without giving up modern language design.
 
-The project is building a complete native development platform: a self-hosted compiler, high-performance runtime and standard library, package management, WebAssembly support, native executable targets, diagnostics, formatter, and developer tooling.
-
-Raz is intended for software where runtime cost, memory behavior, concurrency, and machine-level control matter — without giving up modern language design.
+Raz 1.0 is a complete native development platform: a self-hosted compiler, a layered standard library, four code-generation backends, a package registry, a formatter, a language server, and reproducible builds.
 
 ### Design goals
 
-- **Native performance** with predictable execution and low runtime overhead.
-- **Strong static guarantees** through compile-time analysis and ownership-aware semantics.
-- **Systems-level control** for runtimes, compilers, networking, infrastructure, and performance-critical applications.
-- **Modern abstractions** including generics, traits, pattern matching, structured types, and expressive error handling.
-- **First-class tooling** built as part of the language rather than as an afterthought.
-- **Portable targets** with native Windows and Linux support and an evolving WebAssembly backend.
+- **Native performance** with predictable execution and no mandatory tracing garbage collector.
+- **Memory safety with explicit control** through ownership, moves, borrowing, non-lexical loan analysis, deterministic destruction, and `unsafe` where low-level access is deliberate.
+- **Systems-level control** for runtimes, compilers, networking, storage, and performance-critical applications.
+- **Modern abstractions** including generics, traits, associated items, closures, iterators, payload enums, and pattern matching.
+- **First-class tooling** built as part of the language rather than bolted on afterwards.
+- **Portable targets** — native Windows and Linux, WebAssembly, and RXE bytecode from one compiler pipeline.
 - **A cohesive ecosystem** centered on the `raz` toolchain and the official package registry.
 
 ---
 
 ## Example
 
+Raz uses **type-first declarations**, semicolon-terminated statements, and explicit ownership.
+
 ```raz
-struct Point {
-    x: f64,
-    y: f64,
+namespace shapes;
+
+public struct Rect {
+    i64 width;
+    i64 height;
 }
 
-fn distance(a: Point, b: Point) -> f64 {
-    let dx = b.x - a.x;
-    let dy = b.y - a.y;
-
-    sqrt(dx * dx + dy * dy)
+trait Area {
+    fn area(Self& self) -> i64;
 }
 
-fn main() {
-    let a = Point { x: 0.0, y: 0.0 };
-    let b = Point { x: 3.0, y: 4.0 };
+impl Area for Rect {
+    fn area(Rect& self) -> i64 {
+        return self.width * self.height;
+    }
+}
 
-    println("distance = {}", distance(a, b));
+fn scale(i64&mut value, i64 factor) {
+    *value *= factor;
+}
+
+fn main() -> i64 {
+    Rect panel = Rect { width: 6, height: 7 };
+    i64 total = panel.area();
+
+    scale(&mut total, 2);
+    print("computed area");
+
+    return total;
 }
 ```
 
-> Raz is under active development. Syntax, tooling, and implementation details may continue to evolve until stable language releases are published.
+> Raz 1.0 defines a stable language contract. Syntax, type system, ownership rules, traits and generics, pattern matching, modules, and package interfaces are stable within the 1.x line. See [Language stability](https://github.com/raz-language/raz/blob/main/docs/LANGUAGE-STABILITY.md).
 
 ---
 
@@ -68,87 +86,94 @@ fn main() {
 | Repository | Purpose |
 |---|---|
 | **[`raz-language/raz`](https://github.com/raz-language/raz)** | Compiler, language implementation, runtime, standard library, backends, and core developer tools. |
-| **[`raz-language/packages`](https://github.com/raz-language/packages)** | Official Raz package registry and package index. |
+| **[`raz-language/packages`](https://github.com/raz-language/packages)** | Official package registry, package index, and the sources of the official packages. |
+| **[`raz-language/.github`](https://github.com/raz-language/.github)** | Organization profile and shared community health files. |
 
 ---
 
 ## Toolchain
 
-The Raz command-line experience is designed to stay small and consistent:
+`raz` is the project driver and primary command-line interface.
 
 ```text
-raz build      Build a project
-raz run        Build and run a project
-raz check      Type-check and validate without producing a final binary
-raz test       Run project tests
-raz fmt        Format Raz source
-raz package    Work with packages and manifests
+raz new hello        Create a new package
+raz check            Parse, resolve, type-check, and validate
+raz build            Build a native artifact
+raz run              Build and run a program
+raz test             Run test_ functions
+raz fmt              Format Raz source
+raz doc              Generate API documentation
+raz add <package>    Add a dependency from the official registry
+raz doctor           Inspect the local toolchain environment
 ```
 
-The exact command set may evolve as the toolchain reaches stable releases.
+The full command surface — backends, targets, workspaces, packaging, and publishing — is documented in the [CLI reference](https://github.com/raz-language/raz/blob/main/docs/CLI.md).
 
 ---
 
 ## Architecture
 
-The compiler is moving toward a Raz-owned implementation, with native code retained only where it belongs: platform, ABI, runtime, and backend boundaries.
-
-At a high level:
+The production compiler is written in Raz. Native code is retained only where it belongs: platform, ABI, cryptographic-engine, and backend boundaries.
 
 ```text
 Raz source
     │
     ▼
-Parser / AST
+Parser + semantic analysis
     │
     ▼
-Semantic analysis
+Typed HIR
     │
     ▼
-HIR / MIR
+Verified MIR ──────────► diagnostics / language server / tooling
     │
-    ├──────────────► diagnostics / tooling
-    │
-    ▼
-Backend
-    │
-    ├──────────────► native targets
-    ├──────────────► WebAssembly
-    └──────────────► Raz runtime/executable targets
+    ├──────── Forge ──────── native object / executable
+    ├──────── LLVM ───────── LLVM IR / native object
+    ├──────── WebAssembly ── .wasm
+    └──────── RXE ────────── .rxe bytecode
 ```
 
-The language and toolchain are being developed as one system rather than a collection of disconnected tools.
+Forge is the default native backend and is linked in-process. LLVM emits IR from the same verified MIR and delegates native code generation to an external Clang/LLVM toolchain. Every backend shares one frontend and one set of language semantics.
+
+See [Compiler architecture](https://github.com/raz-language/raz/blob/main/docs/ARCHITECTURE.md) and [Backends](https://github.com/raz-language/raz/blob/main/docs/BACKENDS.md).
 
 ---
 
-## Project direction
+## Packages
 
-Current work is focused on the pieces required for a production-capable language ecosystem:
+The official registry is GitHub-backed and static: immutable, deterministic `.dpk` archives with content-addressed storage, integrity verification, and offline builds.
 
-- compiler correctness and self-hosting
-- ownership and borrow checking
-- traits and generics
-- pattern matching
-- MIR semantics and optimization
-- native code generation
-- WebAssembly
-- package management
-- standard library coverage
-- formatter and diagnostics
-- editor and IDE integration
-- reproducible builds and testing
+```text
+raz search crypto
+raz add crypto
+raz add serde@^0.2.0
+raz update
+```
 
-Project documentation is kept focused on durable architecture, language behavior, usage, and developer reference. Development history belongs in changelogs, release notes, and internal engineering notes.
+Published packages include `crypto`, `serde`, `toml`, `regex`, `uuid`, `semver`, `datetime`, `websocket`, `http-router`, `sqlite`, and `postgres`. Browse the registry at [`raz-language/packages`](https://github.com/raz-language/packages).
+
+---
+
+## Documentation
+
+| Guide | Description |
+|---|---|
+| [Getting Started](https://github.com/raz-language/raz/blob/main/docs/GETTING-STARTED.md) | Practical introduction to the language |
+| [Language specification](https://github.com/raz-language/raz/blob/main/docs/LANGUAGE-SPECIFICATION.md) | Normative syntax and semantic rules |
+| [CLI reference](https://github.com/raz-language/raz/blob/main/docs/CLI.md) | Project and compiler commands |
+| [Package management](https://github.com/raz-language/raz/blob/main/docs/PACKAGE-MANAGEMENT.md) | Dependencies, lockfiles, registries, publishing |
+| [Installation](https://github.com/raz-language/raz/blob/main/docs/INSTALLATION.md) | Installers, portable archives, toolchain management |
+| [Documentation index](https://github.com/raz-language/raz/blob/main/docs/README.md) | Everything else |
 
 ---
 
 ## Contributing
 
-Raz is an open-source project and contributions are welcome.
+Raz is open source and contributions are welcome.
 
-Before opening a pull request, please review the repository's contribution guidelines and keep changes focused, testable, and consistent with the project's architecture.
+Before opening a pull request, review the contribution guidelines in the repository you are changing and keep changes focused, testable, and consistent with the project's architecture. For bugs and feature proposals, use the issue templates provided by the organization.
 
-For bugs and feature proposals, use the issue templates provided by the organization.
+Adding a package to the registry follows a separate flow — see [CONTRIBUTING.md](https://github.com/raz-language/packages/blob/main/CONTRIBUTING.md) in the packages repository.
 
 ---
 
@@ -156,15 +181,18 @@ For bugs and feature proposals, use the issue templates provided by the organiza
 
 Please do not report security vulnerabilities through public issues.
 
-See [`SECURITY.md`](../SECURITY.md) in this organization repository for the current reporting policy.
+See the [security policy](https://github.com/raz-language/raz/blob/main/SECURITY.md) for the current reporting process and the areas considered security-relevant.
+
+---
+
+## License
+
+Raz and the official packages are licensed under the [Apache License 2.0](https://github.com/raz-language/raz/blob/main/LICENSE). Forge retains its nested Apache-2.0 license for independent redistribution.
 
 ---
 
 <div align="center">
 
 **Raz — fast by design.**
-
-[Compiler](https://github.com/raz-language/raz) ·
-[Packages](https://github.com/raz-language/packages)
 
 </div>
