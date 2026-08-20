@@ -85,9 +85,14 @@ fn main() -> i64 {
 
 | Repository | Purpose |
 |---|---|
-| **[`raz-language/raz`](https://github.com/raz-language/raz)** | Compiler, language implementation, runtime, standard library, backends, and core developer tools. |
-| **[`raz-language/packages`](https://github.com/raz-language/packages)** | Official package registry, package index, and the sources of the official packages. |
-| **[`raz-language/.github`](https://github.com/raz-language/.github)** | Organization profile and shared community health files. |
+| **[`raz-language/raz`](https://github.com/raz-language/raz)** | Production compiler, runtime, standard library, embedded native backend/linker integrations, and core developer tools. |
+| **[`raz-language/forge`](https://github.com/raz-language/forge)** | Standalone Forge optimizing native backend and compiler infrastructure. |
+| **[`raz-language/oblink`](https://github.com/raz-language/oblink)** | Standalone native linker used by the Raz toolchain where supported. |
+| **[`raz-language/packages`](https://github.com/raz-language/packages)** | Official package registry, package index, and official package sources. |
+| **[`raz-language/installer`](https://github.com/raz-language/installer)** | Installers, portable release packaging, channels, and `razup` distribution tests. |
+| **[`raz-language/raz-vscode`](https://github.com/raz-language/raz-vscode)** | First-party Visual Studio Code integration around the production `raz lsp` server. |
+| **[`raz-language/demo-project`](https://github.com/raz-language/demo-project)** | Integration/demo project used to exercise a published toolchain and packages. |
+| **[`raz-language/.github`](https://github.com/raz-language/.github)** | Organization profile and shared community files. |
 
 ---
 
